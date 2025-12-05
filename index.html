@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransCoope - Transcripción Musical con IA</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/vexflow@3.0.0/build/vexflow.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.js"></script>
+</head>
+<body>
+    <!-- Contenedor principal de la aplicación -->
+    <div id="app">
+        <!-- Router View -->
+        <div id="router-view"></div>
+        
+        <!-- Notificaciones -->
+        <div id="notifications-container"></div>
+    </div>
+
+    <!-- Templates -->
+    <template id="login-template">
+        <div class="screen active">
+            <div class="login-container">
+                <div class="logo">
+                    <i class="fas fa-music"></i>
+                    <h1>TransCoope</h1>
+                </div>
+                <p class="tagline">Transforma música en partituras con inteligencia artificial</p>
+                
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <input type="text" id="username" placeholder="Usuario" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="password" placeholder="Contraseña" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                </form>
+                
+                <p class="register-link">¿No tienes cuenta? <a href="#/register">Regístrate</a></p>
+            </div>
+        </div>
+    </template>
+
+    <template id="register-template">
+        <div class="screen active">
+            <div class="register-container">
+                <div class="logo">
+                    <i class="fas fa-music"></i>
+                    <h1>TransCoope</h1>
+                </div>
+                <p class="tagline">Crea tu cuenta y elige tus géneros favoritos</p>
+                
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <input type="text" id="reg-username" placeholder="Usuario" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="reg-email" placeholder="Correo electrónico" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="reg-password" placeholder="Contraseña" required>
+                    </div>
+                    
+                    <div class="genres-section">
+                        <h3>Selecciona tus géneros musicales favoritos</h3>
+                        <div class="genres-grid">
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="rock">
+                                <span>Rock</span>
+                            </label>
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="pop">
+                                <span>Pop</span>
+                            </label>
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="jazz">
+                                <span>Jazz</span>
+                            </label>
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="clasica">
+                                <span>Clásica</span>
+                            </label>
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="electronica">
+                                <span>Electrónica</span>
+                            </label>
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="metal">
+                                <span>Metal</span>
+                            </label>
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="salsa">
+                                <span>Salsa</span>
+                            </label>
+                            <label class="genre-option">
+                                <input type="checkbox" name="genre" value="hiphop">
+                                <span>Hip Hop</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Crear Cuenta</button>
+                </form>
+                
+                <p class="login-link">¿Ya tienes cuenta? <a href="#/login">Inicia Sesión</a></p>
+            </div>
+        </div>
+    </template>
+
+    <template id="app-template">
+        <div class="screen active">
+            <!-- Barra de navegación -->
+            <nav class="navbar">
+                <div class="nav-container">
+                    <div class="nav-logo">
+                        <i class="fas fa-music"></i>
+                        <span>TransCoope</span>
+                    </div>
+                    <ul class="nav-menu">
+                        <li><a href="#/transcripcion" class="nav-link" data-section="transcripcion">Transcripción</a></li>
+                        <li><a href="#/biblioteca" class="nav-link" data-section="biblioteca">Biblioteca</a></li>
+                        <li><a href="#/practica" class="nav-link" data-section="practica">Práctica</a></li>
+                        <li><a href="#/comunidad" class="nav-link" data-section="comunidad">Comunidad</a></li>
+                        <li><a href="#/proyectos" class="nav-link" data-section="proyectos">Proyectos</a></li>
+                        <li><a href="#/cursos" class="nav-link" data-section="cursos">Cursos</a></li>
+                        <li><a href="#/ranking" class="nav-link" data-section="ranking">Ranking</a></li>
+                        <li><a href="#/recomendaciones" class="nav-link" data-section="recomendaciones">Recomendaciones</a></li>
+                    </ul>
+                    <div class="nav-user">
+                        <span id="user-name">Usuario</span>
+                        <button id="profile-btn" class="btn-secondary" aria-label="Perfil">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <button id="logout-btn" class="btn-secondary">Cerrar Sesión</button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Contenido principal -->
+            <main class="main-content">
+                <div id="main-content"></div>
+            </main>
+        </div>
+    </template>
+
+    <!-- Templates de secciones -->
+    <template id="transcription-template">
+        <section class="content-section active">
+            <div class="section-header">
+                <h2>Transcripción Musical con IA</h2>
+                <p>Sube un archivo de audio o ingresa un enlace para convertir música en partituras</p>
+            </div>
+            
+            <div class="transcription-container">
+                <div class="input-methods">
+                    <div class="method-card">
+                        <div class="method-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3>Enlace de Canción</h3>
+                        <p>YouTube, Spotify, SoundCloud, etc.</p>
+                        <div class="url-input">
+                            <input type="text" id="song-url" placeholder="Pega el enlace aquí">
+                            <button id="process-url" class="btn-primary">Procesar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <div class="method-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3>Subir Archivo</h3>
+                        <p>MP3, WAV, FLAC, etc. (máx. 50MB)</p>
+                        <div class="file-input">
+                            <input type="file" id="audio-file" accept="audio/*">
+                            <label for="audio-file" class="btn-primary">Seleccionar Archivo</label>
+                            <span id="file-name" class="file-name"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="processing-section" id="processing-section">
+                    <div class="processing-animation">
+                        <div class="spinner"></div>
+                        <p>Analizando audio con IA...</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="processing-steps">
+                            <div class="step active">Separando instrumentos</div>
+                            <div class="step">Detectando melodías</div>
+                            <div class="step">Generando partituras</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="results-section" id="results-section">
+                    <div class="results-header">
+                        <h3>Partituras Generadas</h3>
+                        <div class="results-actions">
+                            <button id="download-pdf" class="btn-primary">
+                                <i class="fas fa-download"></i> Descargar PDF
+                            </button>
+                            <button id="save-to-library" class="btn-secondary">
+                                <i class="fas fa-save"></i> Guardar en Biblioteca
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="song-info">
+                        <h4>Come As You Are - Nirvana</h4>
+                        <div class="song-meta">
+                            <span><strong>Género:</strong> Grunge Rock</span>
+                            <span><strong>Año:</strong> 1991</span>
+                            <span><strong>BPM:</strong> 120</span>
+                            <span><strong>Duración:</strong> 3:47</span>
+                        </div>
+                    </div>
+                    
+                    <div class="instruments-tabs">
+                        <!-- Las pestañas se generan dinámicamente -->
+                    </div>
+                    
+                    <div class="sheet-music-container">
+                        <div id="vexflow-container"></div>
+                    </div>
+                    
+                    <div class="audio-player-section">
+                        <h4>Reproduce la canción</h4>
+                        <div id="waveform"></div>
+                        <div class="audio-controls">
+                            <button id="play-btn" class="btn-primary"><i class="fas fa-play"></i></button>
+                            <button id="pause-btn" class="btn-secondary"><i class="fas fa-pause"></i></button>
+                            <button id="stop-btn" class="btn-secondary"><i class="fas fa-stop"></i></button>
+                            <div class="volume-control">
+                                <i class="fas fa-volume-up"></i>
+                                <input type="range" id="volume-slider" min="0" max="100" value="80">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="practice-template">
+        <section class="content-section active">
+            <div class="section-header">
+                <h2>Práctica Interactiva - Come As You Are</h2>
+                <p>Mejora tu técnica con nuestro sistema de práctica avanzada</p>
+            </div>
+            
+            <div class="practice-container">
+                <div class="practice-main">
+                    <div class="sheet-music-practice" id="practice-sheet"></div>
+                    
+                    <div class="practice-controls">
+                        <div class="section-selector">
+                            <h4>Practica por Secciones</h4>
+                            <div class="sections-grid">
+                                <button class="section-btn" data-start="0" data-end="8">Intro (0:00-0:08)</button>
+                                <button class="section-btn" data-start="8" data-end="24">Verso (0:08-0:24)</button>
+                                <button class="section-btn" data-start="24" data-end="40">Estribillo (0:24-0:40)</button>
+                                <button class="section-btn" data-start="40" data-end="56">Solo (0:40-0:56)</button>
+                            </div>
+                            <div class="loop-control">
+                                <input type="checkbox" id="loop-toggle">
+                                <label for="loop-toggle">Repetir sección</label>
+                            </div>
+                        </div>
+                        
+                        <div class="speed-controls">
+                            <h4>Velocidad</h4>
+                            <div class="speed-buttons">
+                                <button class="speed-btn" data-speed="0.5">0.5x</button>
+                                <button class="speed-btn" data-speed="0.75">0.75x</button>
+                                <button class="speed-btn active" data-speed="1">1x</button>
+                                <button class="speed-btn" data-speed="1.25">1.25x</button>
+                                <button class="speed-btn" data-speed="1.5">1.5x</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="practice-sidebar">
+                    <div class="metronome-panel">
+                        <h3><i class="fas fa-metronome"></i> Metrónomo</h3>
+                        <div class="bpm-control">
+                            <label>BPM: <span id="bpm-value">120</span></label>
+                            <input type="range" id="bpm-slider" min="40" max="240" value="120">
+                        </div>
+                        <div class="time-signature">
+                            <select id="time-signature">
+                                <option value="4/4">4/4</option>
+                                <option value="3/4">3/4</option>
+                                <option value="6/8">6/8</option>
+                            </select>
+                        </div>
+                        <button id="metronome-toggle" class="btn-primary">
+                            <i class="fas fa-play"></i> Iniciar
+                        </button>
+                        <div class="beat-indicator">
+                            <div class="beat active"></div>
+                            <div class="beat"></div>
+                            <div class="beat"></div>
+                            <div class="beat"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="chord-library">
+                        <h3><i class="fas fa-guitar"></i> Acordes de la Canción</h3>
+                        <div class="chords-grid">
+                            <div class="chord-diagram" data-chord="Em">
+                                <div class="chord-fret">0</div>
+                                <div class="chord-fret">2</div>
+                                <div class="chord-fret">2</div>
+                                <div class="chord-fret">0</div>
+                                <div class="chord-fret">0</div>
+                                <div class="chord-fret">0</div>
+                                <div class="chord-name">Em</div>
+                            </div>
+                            <div class="chord-diagram" data-chord="D">
+                                <div class="chord-fret">x</div>
+                                <div class="chord-fret">x</div>
+                                <div class="chord-fret">0</div>
+                                <div class="chord-fret">2</div>
+                                <div class="chord-fret">3</div>
+                                <div class="chord-fret">2</div>
+                                <div class="chord-name">D</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="practice-stats">
+                        <h3><i class="fas fa-chart-line"></i> Estadísticas</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">87%</div>
+                                <div class="stat-label">Precisión</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">118</div>
+                                <div class="stat-label">BPM</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">15</div>
+                                <div class="stat-label">Racha</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <audio id="practice-audio" preload="auto">
+                <!-- Audio se carga dinámicamente -->
+            </audio>
+        </section>
+    </template>
+
+    <template id="courses-template">
+        <section class="content-section active">
+            <div class="section-header">
+                <h2>Cursos y Tutoriales</h2>
+                <p>Aprende música con nuestros cursos interactivos</p>
+            </div>
+            
+            <div class="courses-grid">
+                <div class="course-card" data-course="guitarra">
+                    <div class="course-image">
+                        <i class="fas fa-guitar"></i>
+                    </div>
+                    <div class="course-info">
+                        <h3>Guitarra Eléctrica - Nivel Inicial</h3>
+                        <p>Aprende acordes, escalas y técnicas básicas</p>
+                        <div class="course-meta">
+                            <span class="course-level">Principiante</span>
+                            <span class="course-duration">12 lecciones</span>
+                        </div>
+                        <a href="#/curso/guitarra-basico" class="btn-primary">Comenzar Curso</a>
+                    </div>
+                </div>
+                
+                <div class="course-card" data-course="teoria">
+                    <div class="course-image">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div class="course-info">
+                        <h3>Teoría Musical Esencial</h3>
+                        <p>Domina escalas, acordes y progresiones</p>
+                        <div class="course-meta">
+                            <span class="course-level">Intermedio</span>
+                            <span class="course-duration">8 lecciones</span>
+                        </div>
+                        <a href="#/curso/teoria-musical" class="btn-primary">Comenzar Curso</a>
+                    </div>
+                </div>
+                
+                <div class="course-card" data-course="bateria">
+                    <div class="course-image">
+                        <i class="fas fa-drum"></i>
+                    </div>
+                    <div class="course-info">
+                        <h3>Batería: Ritmos de Rock</h3>
+                        <p>Patrones esenciales y técnicas</p>
+                        <div class="course-meta">
+                            <span class="course-level">Principiante</span>
+                            <span class="course-duration">10 lecciones</span>
+                        </div>
+                        <a href="#/curso/bateria-rock" class="btn-primary">Comenzar Curso</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="course-detail-template">
+        <section class="content-section active">
+            <div class="course-detail-header">
+                <h2 id="course-title">Curso de Guitarra</h2>
+                <div class="course-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 30%"></div>
+                    </div>
+                    <span>30% Completado</span>
+                </div>
+            </div>
+            
+            <div class="lesson-container">
+                <div class="lesson-sidebar">
+                    <h3>Lecciones</h3>
+                    <div class="lesson-list">
+                        <div class="lesson-item active" data-lesson="1">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Lección 1: Acordes básicos</span>
+                        </div>
+                        <div class="lesson-item" data-lesson="2">
+                            <i class="fas fa-lock"></i>
+                            <span>Lección 2: Riff principal</span>
+                        </div>
+                        <div class="lesson-item" data-lesson="3">
+                            <i class="fas fa-lock"></i>
+                            <span>Lección 3: Solo intermedio</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lesson-content">
+                    <div class="lesson-video">
+                        <div class="video-placeholder">
+                            <i class="fas fa-play-circle"></i>
+                            <p>Video de la lección</p>
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-tools">
+                        <div class="practice-area" id="course-practice-sheet"></div>
+                        <div class="lesson-exercises">
+                            <h4>Ejercicios de esta lección</h4>
+                            <div class="exercise-list">
+                                <div class="exercise-item">
+                                    <input type="checkbox" id="ex1">
+                                    <label for="ex1">Practicar acorde Em 10 veces</label>
+                                </div>
+                                <div class="exercise-item">
+                                    <input type="checkbox" id="ex2">
+                                    <label for="ex2">Cambiar entre Em y D 5 veces</label>
+                                </div>
+                                <div class="exercise-item">
+                                    <input type="checkbox" id="ex3">
+                                    <label for="ex3">Tocar riff a 60 BPM</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- Modal de Perfil -->
+    <template id="profile-modal-template">
+        <div class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Mi Perfil</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <div class="avatar-large">
+                                <span id="profile-avatar-text">U</span>
+                            </div>
+                        </div>
+                        <div class="profile-details">
+                            <h4 id="profile-username">Usuario</h4>
+                            <p id="profile-email">usuario@ejemplo.com</p>
+                            <div class="profile-stats">
+                                <div class="stat">
+                                    <strong id="profile-sheets">0</strong>
+                                    <span>Partituras</span>
+                                </div>
+                                <div class="stat">
+                                    <strong id="profile-posts">0</strong>
+                                    <span>Publicaciones</span>
+                                </div>
+                                <div class="stat">
+                                    <strong id="profile-projects">0</strong>
+                                    <span>Proyectos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-genres">
+                        <h4>Mis Géneros Favoritos</h4>
+                        <div class="genres-list" id="profile-genres-list"></div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn-primary" id="edit-profile-btn">Editar Perfil</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
